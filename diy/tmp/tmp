@@ -1,1 +1,1 @@
-		set system.@system[-1].timezone='CST-8'
+		set system.@system[-1].timezone='UTC'

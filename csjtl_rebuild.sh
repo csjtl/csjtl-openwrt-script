@@ -50,13 +50,13 @@ DIY_IP=192.168.7.1
 DIY_THEME='bootstrap'
 
 #DIY_HOSTNAME DIY_TIMEZONE DIY_ZONENAME
-DIY_HOSTNAME='OpenWrt-8999999999t'
+DIY_HOSTNAME='CSJTL-NAME'
 DIY_TIMEZONE='CST-8'
 DIY_ZONENAME='Asia/Shanghai'
 
 #DIY_PASSWORD DIY_USERNAME
 DIY_USERNAME='csjtl'
-DIY_PASSWORD=''
+DIY_PASSWORD='csjtl'
 
 #--------------------------------------------------------------
 
@@ -112,7 +112,13 @@ sed -i '/ystem\[-1\].zonename=/d' ./package/base-files/files/bin/config_generate
 sed -i "/set system.\@system\[-1\].hostname=/a\        set system.@system[-1].zonename='Asia/Shanghai'" ./package/base-files/files/bin/config_generate
 #DIY_PASSWORD
 #./package/system/rpcd/files/rpcd.config
+#openwrt/package/base-files/files/etc/passwd
+#openwrt/package/base-files/files/etc/shadow
+#openwrt/feeds/luci/modules/luci-mod-admin-mini/luasrc/controller/mini/index.lua
+#openwrt/package/system/rpcd/files/rpcd.config
+#openwrt/feeds/luci/modules/luci-base/luasrc/view/sysauth.htm
 STEP_RESULT
+exit
 #-------------------------------------------------------------
 
 
