@@ -1,1 +1,1 @@
-		set system.@system[-1].timezone='UTC'
+				local scope = { duser = "root", fuser = user }
