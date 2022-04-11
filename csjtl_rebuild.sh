@@ -55,9 +55,24 @@ function diy_config(){
 	DIY_HIDE='n'
 }
 
+function congfig_make(){
+	every_step='编译'
+	while :; do
+		read -p "1.menuconfig; 2.defconfig \n 选择" CHOOSE
+		case $CHOOSE in
+			1)	make menuconfig
+			break
+			;;
+			2)	make defconfig
+			break
+			;;
+		esac
+	done
+}
+
 function run_diy_config(){
 	#diy执行区
-	EVERY_STEP='diy执行'
+	every_step='diy执行'
 	#DIY_BANNER
 	echo "$DIY_BANNER" > ./package/base-files/files/etc/banner
 
@@ -164,16 +179,9 @@ function run_diy_config(){
 
 function diy_config_recover(){
 	#diy恢复#区
-	EVERY_STEP='diy恢复'
+	every_step='diy恢复'
 	#恢复banner
-	echo '  _______                     ________        __
- |       |.-----.-----.-----.|  |  |  |.----.|  |_
- |   -   ||  _  |  -__|     ||  |  |  ||   _||   _|
- |_______||   __|_____|__|__||________||__|  |____|
-          |__| W I R E L E S S   F R E E D O M
- -----------------------------------------------------
- %D %V, %C
- -----------------------------------------------------' > ./package/base-files/files/etc/banner
+	echo -e "  _______                     ________        __\n |       |.-----.-----.-----.|  |  |  |.----.|  |_\n |   -   ||  _  |  -__|     ||  |  |  ||   _||   _|\n |_______||   __|_____|__|__||________||__|  |____|\n          |__| W I R E L E S S   F R E E D O M\n -----------------------------------------------------\n %D %V, %C\n -----------------------------------------------------" > ./package/base-files/files/etc/banner
 	#恢复ip
 	sed -i "s/$DIY_IP/192.168.1.1/" ./package/base-files/files/bin/config_generate
 	sed -i "s/$DIY_IP/192.168.1.1/" ./package/base-files/files/etc/ethers
@@ -207,7 +215,7 @@ function diy_config_recover(){
 }
 
 function copy_firmware(){
-	EVERY_STEP='固件拷贝'
+	every_step='固件拷贝'
 	rm -rf /home/$USER/openwrt_x86/bin/packages/x86/64/* /home/$USER/openwrt_x86/bin/firmware/x86/64/*
 	cp ./bin/packages/x86_64/*/*.ipk /home/$USER/openwrt_x86/bin/packages/x86/64/
 	cp ./bin/targets/x86/64/*.img.gz /home/$USER/openwrt_x86/bin/firmware/x86/64/
@@ -223,9 +231,9 @@ function copy_firmware(){
 
 function step_result(){
 	if [ "$?" == "0" ]; then
-		echo "$EVERY_STEP完成"
+		echo "$every_step完成"
 	else
-		echo "$EVERY_STEP失败"
+		echo "$every_step失败"
 		exit
 	fi
 }
@@ -245,34 +253,15 @@ fi
 
 cd openwrt
 #make clean
+#git pull
 #./scripts/feeds update -a
-exit
 run_diy_config
-
 #./scripts/feeds install -a
-
-EVERY_STEP='编译'
-while :; do
-read -p "1.menuconfig; 2.defconfig \n 选择" CHOOSE
-case $CHOOSE in
-	1)	make menuconfig
-	break
-	;;
-	2)	make defconfig
-	break
-	;;
-esac
-done
-
+congfig_make
 #make -j$(($(nproc)+1)) download V=s
 make -j$(($(nproc)+1)) V=s || make -j1 V=s
-
-step_result
-
 copy_firmware
-
 diy_config_recover
-
 
 << EOF
 EOF
