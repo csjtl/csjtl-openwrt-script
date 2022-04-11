@@ -5,7 +5,7 @@
 
 ### 脚本结构
 
-![脚本结构](../assets/openwrt-script-csjtl/脚本结构.png)
+![脚本结构](../assets/openwrt-script-csjtl/script.png)
 
 简单说明一下
 diy_config 自定义的参数
