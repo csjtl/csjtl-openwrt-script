@@ -1,1 +1,1 @@
-				local scope = { duser = "admin", fuser = user }
+				local scope = { duser = "root", fuser = user }

@@ -51,8 +51,25 @@ function diy_config(){
 	DIY_USERNAME='admin'
 	DIY_PASSWORD='csjtl'
 
-	#yonghumingyincang
+	#DIY_HIDE
 	DIY_HIDE='n'
+}
+
+function git_source(){
+	#rm -rf openwrt
+
+	if [ ! -d "openwrt" ]; then
+		ln -sf /home/$USER/Documents/${USER}_openwrt/diy $PWD
+		ln -sf /home/$USER/Documents/${USER}_openwrt/${USER}_build.sh $PWD
+
+		git clone https://github.com/openwrt/openwrt.git
+
+		#sudo mkdir -p -m 755 /home/$USER/openwrt_x86/dl /home/$USER/openwrt_x86/build_dir /home/$USER/openwrt_x86/staging_dir/hostpkg
+		ln -sf /home/$USER/openwrt_x86/build_dir/hostpkg $PWD/openwrt/build_dir
+		ln -sf /home/$USER/openwrt_x86/dl $PWD/openwrt
+		ln -sf /home/$USER/openwrt_x86/staging_dir $PWD/openwrt
+		ln -sf /home/$USER/Documents/${USER}_openwrt/.config $PWD/openwrt
+	fi
 }
 
 function congfig_make(){
@@ -70,7 +87,7 @@ function congfig_make(){
 	done
 }
 
-function run_diy_config(){
+function diy_config_run(){
 	#diy执行区
 	every_step='diy执行'
 	#DIY_BANNER
@@ -158,9 +175,9 @@ function run_diy_config(){
 	fi
 
 	##openwrt/feeds/luci/modules/luci-mod-admin-mini/luasrc/controller/mini/index.lua
+	#sed -i "s/page.sysauth = \"$temp\"/page.sysauth = \"$DIY_USERNAME\"/" ./feeds/luci/modules/luci-mod-admin-mini/luasrc/controller/mini/index.lua
 	grep 'duser = ' ./feeds/luci/modules/luci-base/luasrc/dispatcher.lua > ../diy/tmp/tmp
 	temp=`awk -F "[\"\"]" '{print $2}' ../diy/tmp/tmp`
-	#sed -i "s/page.sysauth = \"$temp\"/page.sysauth = \"$DIY_USERNAME\"/" ./feeds/luci/modules/luci-mod-admin-mini/luasrc/controller/mini/index.lua
 	sed -i "s/duser = \"$temp\"/duser = \"$DIY_USERNAME\"/" ./feeds/luci/modules/luci-base/luasrc/dispatcher.lua
 
 	#DIY_HIDE
@@ -187,9 +204,7 @@ function diy_config_recover(){
 	sed -i "s/$DIY_IP/192.168.1.1/" ./package/base-files/files/etc/ethers
 	sed -i "s/$DIY_IP/192.168.1.1/" ./package/base-files/Makefile
 	#恢复ttyd
-	echo "config ttyd
-		option interface '@lan'
-		option command '/bin/login'" > ./feeds/packages/utils/ttyd/files/ttyd.config
+	echo -e "config ttyd\n	option interface '@lan'\n	option command '/bin/login'" > ./feeds/packages/utils/ttyd/files/ttyd.config
 	#恢复nginx
 	cp ../diy/tmp/nginx.config ./package/feeds/packages/nginx-util/files/
 	#rm ./feeds/packages/net/nginx/files-luci-support/hotkey.conf
@@ -239,27 +254,12 @@ function step_result(){
 }
 
 diy_config
-
-#rm -rf openwrt
-
-if [ ! -d "openwrt" ]; then
-	ln -sf /home/$USER/Documents/${USER}_openwrt/diy $PWD
-	ln -sf /home/$USER/Documents/${USER}_openwrt/${USER}_build.sh $PWD
-
-	git clone https://github.com/openwrt/openwrt.git
-
-	#sudo mkdir -p -m 755 /home/$USER/openwrt_x86/dl /home/$USER/openwrt_x86/build_dir /home/$USER/openwrt_x86/staging_dir/hostpkg
-	ln -sf /home/$USER/openwrt_x86/build_dir/hostpkg $PWD/openwrt/build_dir
-	ln -sf /home/$USER/openwrt_x86/dl $PWD/openwrt
-	ln -sf /home/$USER/openwrt_x86/staging_dir $PWD/openwrt
-	ln -sf /home/$USER/Documents/${USER}_openwrt/.config $PWD/openwrt
-fi
-
+git_source
 cd openwrt
 #make clean
 #git pull
 #./scripts/feeds update -a
-run_diy_config
+diy_config_run
 #./scripts/feeds install -a
 congfig_make
 #make -j$(($(nproc)+1)) download V=s
