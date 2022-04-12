@@ -2,7 +2,7 @@
 #set -x on
 
 if [ "$USER" == "root" ]; then
-	echo "请勿使用root用户编译，换一个普通用户吧~~"
+	echo "root用户"
 	exit 0
 fi
 
@@ -38,13 +38,12 @@ function diy_config(){
 
 	#DIY_IP
 	DIY_IP=192.168.7.1
-	#ttydzidongdenglu
+	#ttyd自定义登录
 	DIY_TTYD='y'
-	#nginx80duankou
+	#nginx 80 端口
 	DIY_NGINX='y'
 	#bootstrap material openwrt openwrt-2020
 	DIY_THEME='bootstrap'
-
 
 	#DIY_HOSTNAME DIY_TIMEZONE DIY_ZONENAME
 	DIY_HOSTNAME='CSJNAME'
@@ -57,7 +56,6 @@ function diy_config(){
 
 	#DIY_HIDE
 	DIY_HIDE='n'
-
 }
 
 function first_compile(){
@@ -105,8 +103,6 @@ function make_config(){
 }
 
 function diy_config_run(){
-	#diy执行区
-	every_step='diy执行'
 	#DIY_BANNER
 	echo "$DIY_BANNER" > ./package/base-files/files/etc/banner
 
@@ -268,7 +264,6 @@ function diy_config_recover(){
 	#恢复DIY_HIDE
 	sed -i "s/value=\"\"/value=\"<%=duser%>\"/" ./feeds/luci/modules/luci-base/luasrc/view/sysauth.htm
 	sed -i "s/type=\"text\"/type=\"text\"<%=attr(\"value\", duser)%>/" ./feeds/luci/themes/luci-theme-bootstrap/luasrc/view/themes/bootstrap/sysauth.htm
-	step_result
 }
 
 function copy_firmware(){
@@ -279,7 +274,6 @@ function copy_firmware(){
 	
 	#ln -sf /home/$USER/openwrt_x86/bin/packages /var/www/openwrt/www/bin
 	#ln -sf /home/$USER/openwrt_x86/bin/firmware /var/www/openwrt/www/bin
-	step_result
 	
 	#网页固件选择
 	# OpenWrt Firmware Selector
@@ -294,7 +288,6 @@ function step_result(){
 		exit
 	fi
 }
-
 
 diy_config
 #first_compile
@@ -312,5 +305,4 @@ diy_config_recover
 
 << EOF
 EOF
-# OpenWrt Firmware Selector
-#$ sudo ./misc/collect.py --image-url 'http://10.0.0.134/bin/firmware/{target}' /home/csjtl/work/csjtl-openwrt/openwrt/bin www/
+
