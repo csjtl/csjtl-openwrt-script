@@ -1,11 +1,6 @@
 #!/bin/bash
 #set -x on
 
-if [ "$USER" == "root" ]; then
-	echo "root用户"
-	exit 0
-fi
-
 function diy_config(){
 	#diy配置区
 	#DIY_BANNER
@@ -37,7 +32,7 @@ function diy_config(){
  -----------------------------------------------------'
 
 	#DIY_IP
-	DIY_IP=192.168.7.1
+	DIY_IP=192.168.1.1
 	#ttyd自定义登录
 	DIY_TTYD='y'
 	#nginx 80 端口
@@ -46,13 +41,13 @@ function diy_config(){
 	DIY_THEME='bootstrap'
 
 	#DIY_HOSTNAME DIY_TIMEZONE DIY_ZONENAME
-	DIY_HOSTNAME='CSJNAME'
+	DIY_HOSTNAME='CSJTL-OpenWRT'
 	DIY_TIMEZONE='CST-8'
 	DIY_ZONENAME='Asia/Shanghai'
 
 	#DIY_PASSWORD DIY_USERNAME
 	DIY_USERNAME='admin'
-	#DIY_PASSWORD='csjtl'
+	DIY_PASSWORD='admin'
 
 	#DIY_HIDE
 	DIY_HIDE='n'
@@ -196,7 +191,6 @@ function diy_config_run(){
 	##openwrt/package/base-files/files/etc/shadow
 	temp=`head -1 ./package/base-files/files/etc/shadow`
 	temp=${temp%%:*}
-
 	if [[ "$temp" != root ]] && [[ "$DIY_USERNAME" != root ]]; then
 			sed -i '1d' ./package/base-files/files/etc/shadow
 			sed -i "1i\\$DIY_USERNAME:::0:99999:7:::" ./package/base-files/files/etc/shadow
@@ -207,6 +201,11 @@ function diy_config_run(){
 		else
 			echo
 	fi
+
+	#DIY_PASSWORD
+	passwd=$(openssl passwd -1 ${DIY_PASSWORD})
+	awk 'BEGIN {FS=":"; OFS=":";}  {if ($0 ~ /^'$DIY_USERNAME'/) {print $1,"'$passwd'",$3,$4,$5,$6,"::";} else {print $0;}}' < ./package/base-files/files/etc/shadow > ../diy/tmp/tmp
+	mv ../diy/tmp/tmp ./package/base-files/files/etc/shadow
 
 	##openwrt/feeds/luci/modules/luci-mod-admin-mini/luasrc/controller/mini/index.lua
 	#sed -i "s/page.sysauth = \"$temp\"/page.sysauth = \"$DIY_USERNAME\"/" ./feeds/luci/modules/luci-mod-admin-mini/luasrc/controller/mini/index.lua
@@ -258,6 +257,11 @@ function diy_config_recover(){
 	if [ "$DIY_USERNAME" != "root" ]; then
 		sed -i '1d' ./package/base-files/files/etc/passwd
 		sed -i '1d' ./package/base-files/files/etc/shadow
+		awk 'BEGIN {FS=":"; OFS=":";}  {if ($0 ~ /^root/) {print $1,"",$3,$4,$5,$6,"::";} else {print $0;}}' < ./package/base-files/files/etc/shadow > ../diy/tmp/tmp
+		mv ../diy/tmp/tmp ./package/base-files/files/etc/shadow
+		else
+		awk 'BEGIN {FS=":"; OFS=":";}  {if ($0 ~ /^root/) {print $1,"",$3,$4,$5,$6,"::";} else {print $0;}}' < ./package/base-files/files/etc/shadow > ../diy/tmp/tmp
+		mv ../diy/tmp/tmp ./package/base-files/files/etc/shadow
 	fi
 	sed -i "s/duser = \"$DIY_USERNAME\"/duser = \"root\"/" ./feeds/luci/modules/luci-base/luasrc/dispatcher.lua
 	sed -i "s/callSetPassword('$DIY_USERNAME'/callSetPassword('root'/" ./feeds/luci/modules/luci-mod-system/htdocs/luci-static/resources/view/system/password.js
@@ -301,8 +305,9 @@ make_config
 #make -j$(($(nproc)+1)) download V=s
 make -j$(($(nproc)+1)) V=s || make -j1 V=s
 copy_firmware
+sleep 10
 diy_config_recover
-
+step_result
 << EOF
 EOF
 
