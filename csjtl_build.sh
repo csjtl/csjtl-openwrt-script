@@ -57,12 +57,12 @@ function first_compile(){
 	rm -rf openwrt
 
 	if [ ! -d "openwrt" ]; then
-		ln -sf /home/$USER/Documents/${USER}_openwrt/diy $PWD
-		ln -sf /home/$USER/Documents/${USER}_openwrt/${USER}_build.sh $PWD
+	#	ln -sf /home/$USER/Documents/${USER}_openwrt/diy $PWD
+	#	ln -sf /home/$USER/Documents/${USER}_openwrt/${USER}_build.sh $PWD
 
 		git clone https://github.com/openwrt/openwrt.git
 
-		#sudo mkdir -p -m 755 /home/$USER/openwrt_x86/dl /home/$USER/openwrt_x86/build_dir /home/$USER/openwrt_x86/staging_dir/hostpkg
+		#mkdir -p -m /home/$USER/openwrt_x86/dl /home/$USER/openwrt_x86/build_dir /home/$USER/openwrt_x86/staging_dir
 		ln -sf /home/$USER/openwrt_x86/build_dir $PWD/openwrt
 		ln -sf /home/$USER/openwrt_x86/dl $PWD/openwrt
 		ln -sf /home/$USER/openwrt_x86/staging_dir $PWD/openwrt
@@ -72,7 +72,7 @@ function first_compile(){
 		./scripts/feeds update -a
 		diy_config_run
 		./scripts/feeds install -a
-		cp /home/$USER/Documents/${USER}_openwrt/.config .
+		cp ../.config .
 		make_config
 		make -j$(($(nproc)+1)) download V=s
 		make -j1 V=s || make -j$(($(nproc)+1)) V=s
