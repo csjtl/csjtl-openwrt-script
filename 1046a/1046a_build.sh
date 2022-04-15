@@ -57,22 +57,23 @@ function first_compile(){
 	rm -rf openwrt
 
 	if [ ! -d "openwrt" ]; then
-		ln -sf /home/$USER/Documents/${USER}_openwrt/diy $PWD
-		ln -sf /home/$USER/Documents/${USER}_openwrt/${USER}_build.sh $PWD
+	#	ln -sf /mnt/mac/diy $PWD
+	#	ln -sf /mnt/mac/1046a_build.sh $PWD
+	#	ln -sf /mnt/mac/.config $PWD
 
 		git clone https://github.com/openwrt/openwrt.git
 
-		#sudo mkdir -p -m 755 /home/$USER/openwrt_x86/dl /home/$USER/openwrt_x86/build_dir /home/$USER/openwrt_x86/staging_dir/hostpkg
-		ln -sf /home/$USER/openwrt_x86/build_dir $PWD/openwrt
-		ln -sf /home/$USER/openwrt_x86/dl $PWD/openwrt
-		ln -sf /home/$USER/openwrt_x86/staging_dir $PWD/openwrt
+		mkdir -p /home/$USER/openwrt_1046a/dl /home/$USER/openwrt_1046a/build_dir /home/$USER/openwrt_1046a/staging_dir
+		ln -sf /home/$USER/openwrt_1046a/build_dir $PWD/openwrt
+		ln -sf /home/$USER/openwrt_1046a/dl $PWD/openwrt
+		ln -sf /home/$USER/openwrt_1046a/staging_dir $PWD/openwrt
 
 		diy_config
 		cd openwrt
 		./scripts/feeds update -a
 		diy_config_run
 		./scripts/feeds install -a
-		cp /home/$USER/Documents/${USER}_openwrt/.config .
+		cp ../.config .
 		make_config
 		make -j$(($(nproc)+1)) download V=s
 		make -j1 V=s || make -j$(($(nproc)+1)) V=s
@@ -294,7 +295,7 @@ function step_result(){
 }
 
 diy_config
-#first_compile
+first_compile
 cd openwrt
 #make clean
 #git pull
