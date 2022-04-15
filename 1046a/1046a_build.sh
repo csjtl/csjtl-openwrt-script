@@ -54,39 +54,53 @@ function diy_config(){
 }
 
 function first_compile(){
-	rm -rf openwrt
+		while :; do
+		echo "1.build; 2.rebuild"
+		read -p "选择: " CHOOSE
+		case $CHOOSE in
+			1)	rm -rf openwrt
 
-	if [ ! -d "openwrt" ]; then
-	#	ln -sf /mnt/mac/diy $PWD
-	#	ln -sf /mnt/mac/1046a_build.sh $PWD
-	#	ln -sf /mnt/mac/.config $PWD
+				if [ ! -d "openwrt" ]; then
+				#	ln -sf /mnt/mac/diy $PWD
+				#	ln -sf /mnt/mac/1046a_build.sh $PWD
+				#	ln -sf /mnt/mac/.config $PWD
 
-		git clone https://github.com/openwrt/openwrt.git
+					git clone https://github.com/openwrt/openwrt.git
 
-		mkdir -p /home/$USER/openwrt_1046a/dl /home/$USER/openwrt_1046a/build_dir /home/$USER/openwrt_1046a/staging_dir
-		ln -sf /home/$USER/openwrt_1046a/build_dir $PWD/openwrt
-		ln -sf /home/$USER/openwrt_1046a/dl $PWD/openwrt
-		ln -sf /home/$USER/openwrt_1046a/staging_dir $PWD/openwrt
+					mkdir -p /home/$USER/1046a/openwrt_1046a/dl /home/$USER/1046a/openwrt_1046a/build_dir /home/$USER/1046a/openwrt_1046a/staging_dir
+					ln -sf /home/$USER/1046a/openwrt_1046a/build_dir $PWD/openwrt
+					ln -sf /home/$USER/1046a/openwrt_1046a/dl $PWD/openwrt
+					ln -sf /home/$USER/1046a/openwrt_1046a/staging_dir $PWD/openwrt
+					ln -sf /home/$USER/1046a/openwrt_1046a/feeds $PWD/openwrt
 
-		diy_config
-		cd openwrt
-		./scripts/feeds update -a
-		diy_config_run
-		./scripts/feeds install -a
-		cp ../.config .
-		make_config
-		make -j$(($(nproc)+1)) download V=s
-		make -j1 V=s || make -j$(($(nproc)+1)) V=s
-		copy_firmware
-		diy_config_recover
-		exit
-	fi
+					diy_config
+					cd openwrt
+					./scripts/feeds update -a
+					diy_config_run
+					./scripts/feeds install -a
+					cp ../.config .
+					make_config
+					make -j$(($(nproc)+1)) download V=s
+					make -j1 V=s || make -j$(($(nproc)+1)) V=s
+					copy_firmware
+					diy_config_recover
+					exit
+				fi
+			break
+			;;
+			2)
+			break
+			;;
+		esac
+	done
+	
 }
 
 function make_config(){
 	every_step='编译'
 	while :; do
-		read -p "1.menuconfig; 2.defconfig \n 选择" CHOOSE
+		echo "1.menuconfig; 2.defconfig"
+		read -p "选择: " CHOOSE
 		case $CHOOSE in
 			1)	make menuconfig
 			break
@@ -273,9 +287,9 @@ function diy_config_recover(){
 
 function copy_firmware(){
 	every_step='固件拷贝'
-	rm -rf /home/$USER/openwrt_x86/bin/packages/x86/64/* /home/$USER/openwrt_x86/bin/firmware/x86/64/*
-	cp ./bin/packages/x86_64/*/*.ipk /home/$USER/openwrt_x86/bin/packages/x86/64/
-	cp ./bin/targets/x86/64/*.img.gz /home/$USER/openwrt_x86/bin/firmware/x86/64/
+#	rm -rf /mnt/mac/bin/packages/* /mnt/mac/bin/firmware/*
+#	cp ./bin/packages/aarch64_generic/*/*.ipk /mnt/mac/bin/packages
+#	cp ./bin/targets/layerscape/armv8_64b/*.bin /mnt/mac/bin/firmware
 	
 	#ln -sf /home/$USER/openwrt_x86/bin/packages /var/www/openwrt/www/bin
 	#ln -sf /home/$USER/openwrt_x86/bin/firmware /var/www/openwrt/www/bin
@@ -303,12 +317,12 @@ cd openwrt
 diy_config_run
 #./scripts/feeds install -a
 make_config
-#make -j$(($(nproc)+1)) download V=s
+make -j$(($(nproc)+1)) download V=s
 make -j$(($(nproc)+1)) V=s || make -j1 V=s
 copy_firmware
-sleep 10
 diy_config_recover
 step_result
+
 << EOF
 EOF
 
