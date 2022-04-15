@@ -1,0 +1,12 @@
+
+config wizard 'default'
+	option lan_netmask '255.255.255.0'
+	option lan_ipaddr '10.0.0.1'
+	option wan_proto 'pppoe'
+	option wan_pppoe_user '053101465589'
+	option wan_pppoe_pass '622848'
+	option siderouter '0'
+	option autoupgrade_pkg '0'
+	option autoupgrade_fm '0'
+	option coremark '0'
+

@@ -1,0 +1,39 @@
+#!/bin/sh
+
+CFG=/etc/board.json
+
+. /usr/share/libubox/jshn.sh
+
+[ -s $CFG ] || /bin/board_detect || exit 1
+[ -s /etc/config/network -a -s /etc/config/system ] && exit 0
+
+
+generate_static_system() {
+	uci -q batch <<-EOF
+		add system system
+        set system.@system[-1].zonename='Asia/Shanghai'
+	EOF
+}
+
+#ucidef_set_interface_lan() {
+#        local ifname=$1
+#
+#        uci batch <<EOF
+#            set network.lan='interface'
+#            set network.lan.ifname='$ifname'
+#            set network.lan.type='bridge'
+#            #更改lan口获取ip的方式为static
+#            set network.lan.proto='static'
+#            #更改lan口ip为10.1
+#            set network.lan.ipaddr='192.168.10.1'
+#            set network.lan.netmask='255.255.255.0'
+#            set network.lan.ip6addr='fd04:bd3:80e8:1::1/64'
+#EOF
+#}
+#
+#
+
+
+
+
+
