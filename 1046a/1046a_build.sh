@@ -1,6 +1,21 @@
 #!/bin/bash
 #set -x on
 
+diy_config
+first_compile
+cd openwrt
+#make clean
+#git pull
+#./scripts/feeds update -a
+diy_config_run
+#./scripts/feeds install -a
+make_config
+#make -j$(($(nproc)+1)) download V=s
+make -j$(($(nproc)+1)) V=s || make -j1 V=s
+copy_firmware
+diy_config_recover
+step_result
+
 function diy_config(){
 	#diy配置区
 	#DIY_BANNER
@@ -287,9 +302,9 @@ function diy_config_recover(){
 
 function copy_firmware(){
 	every_step='固件拷贝'
-#	rm -rf /mnt/mac/bin/packages/* /mnt/mac/bin/firmware/*
-#	cp ./bin/packages/aarch64_generic/*/*.ipk /mnt/mac/bin/packages
-#	cp ./bin/targets/layerscape/armv8_64b/*.bin /mnt/mac/bin/firmware
+	#rm -rf /mnt/mac/bin/packages/* /mnt/mac/bin/firmware/*
+	#cp ./bin/packages/aarch64_generic/*/*.ipk /mnt/mac/bin/packages
+	#cp ./bin/targets/layerscape/armv8_64b/*.bin /mnt/mac/bin/firmware
 	
 	#ln -sf /home/$USER/openwrt_x86/bin/packages /var/www/openwrt/www/bin
 	#ln -sf /home/$USER/openwrt_x86/bin/firmware /var/www/openwrt/www/bin
@@ -307,21 +322,6 @@ function step_result(){
 		exit
 	fi
 }
-
-diy_config
-first_compile
-cd openwrt
-#make clean
-#git pull
-#./scripts/feeds update -a
-diy_config_run
-#./scripts/feeds install -a
-make_config
-make -j$(($(nproc)+1)) download V=s
-make -j$(($(nproc)+1)) V=s || make -j1 V=s
-copy_firmware
-diy_config_recover
-step_result
 
 << EOF
 EOF

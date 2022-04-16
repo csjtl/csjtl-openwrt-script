@@ -1,1 +1,0 @@
-			return callSetPassword('root', formData.password.pw1).then(function(success) {
