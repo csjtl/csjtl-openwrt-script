@@ -249,6 +249,11 @@ function diy_config_run(){
 			sed -i "s/value=\"\"/value=\"<%=duser%>\"/" ./feeds/luci/modules/luci-base/luasrc/view/sysauth.htm
 			sed -i "s/type=\"text\"/type=\"text\"<%=attr(\"value\", duser)%>/" ./feeds/luci/themes/luci-theme-bootstrap/luasrc/view/themes/bootstrap/sysauth.htm
 	fi
+
+	#packages
+	if [ ! `grep -c csjtl ./feeds.conf.default` -ne '0' ];then
+    	echo "src-git-full csjtl https://github.com/csjtl/openwrt-packages-backup.git" >> ./feeds.conf.default
+	fi
 }
 
 function diy_config_recover(){
@@ -290,6 +295,8 @@ function diy_config_recover(){
 	#恢复DIY_HIDE
 	sed -i "s/value=\"\"/value=\"<%=duser%>\"/" ./feeds/luci/modules/luci-base/luasrc/view/sysauth.htm
 	sed -i "s/type=\"text\"/type=\"text\"<%=attr(\"value\", duser)%>/" ./feeds/luci/themes/luci-theme-bootstrap/luasrc/view/themes/bootstrap/sysauth.htm
+	#packages
+    sed -i '/csjtl/d' ./feeds.conf.default
 }
 
 function copy_firmware(){
