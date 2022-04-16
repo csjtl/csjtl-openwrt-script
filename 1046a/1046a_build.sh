@@ -1,21 +1,6 @@
 #!/bin/bash
 #set -x on
 
-diy_config
-first_compile
-cd openwrt
-#make clean
-#git pull
-#./scripts/feeds update -a
-diy_config_run
-#./scripts/feeds install -a
-make_config
-#make -j$(($(nproc)+1)) download V=s
-make -j$(($(nproc)+1)) V=s || make -j1 V=s
-copy_firmware
-diy_config_recover
-step_result
-
 function diy_config(){
 	#diy配置区
 	#DIY_BANNER
@@ -47,7 +32,7 @@ function diy_config(){
  -----------------------------------------------------'
 
 	#DIY_IP
-	DIY_IP=192.168.1.1
+	DIY_IP=192.168.2.1
 	#ttyd自定义登录
 	DIY_TTYD='y'
 	#nginx 80 端口
@@ -56,7 +41,7 @@ function diy_config(){
 	DIY_THEME='bootstrap'
 
 	#DIY_HOSTNAME DIY_TIMEZONE DIY_ZONENAME
-	DIY_HOSTNAME='CSJTL-OpenWRT'
+	DIY_HOSTNAME='OK1046A'
 	DIY_TIMEZONE='CST-8'
 	DIY_ZONENAME='Asia/Shanghai'
 
@@ -79,6 +64,10 @@ function first_compile(){
 				#	ln -sf /mnt/mac/diy $PWD
 				#	ln -sf /mnt/mac/1046a_build.sh $PWD
 				#	ln -sf /mnt/mac/.config $PWD
+				#	ln -sf /mnt/mac/copy_image.sh $PWD
+				#	ln -sf /mnt/mac/IMAGE $PWD
+				#	ln -sf /mnt/mac/etc $PWD
+				
 
 					git clone https://github.com/openwrt/openwrt.git
 
@@ -163,11 +152,12 @@ function diy_config_run(){
 	echo "CONFIG_PACKAGE_luci-theme-$DIY_THEME=y" >> .config
 
 	#DIY_HOSTNAME
-	#grep 'set system.\@system\[-1\].hostname=' ./package/base-files/files/bin/config_generate > ../diy/tmp/tmp
+	#grep 'set system.\@system\[-1].hostname=' ./package/base-files/files/bin/config_generate > ../diy/tmp/tmp
 	#temp=$(cat ../diy/tmp/tmp)
 	#temp=$"${temp#*\'}"
 	#OLD_KEYWORDS=$"${temp%*\'}"
 	#sed -i "s/hostname='$OLD_KEYWORDS'/hostname='$DIY_HOSTNAME'/" ./package/base-files/files/bin/config_generate
+
 	DIY_HOSTNAME=${DIY_HOSTNAME:='OpenWrt'}
 	function filter_keywords(){
 		grep "$1" ./package/base-files/files/bin/config_generate > ../diy/tmp/tmp
@@ -180,13 +170,15 @@ function diy_config_run(){
 
 	#DIY_TIMEZONE
 	DIY_TIMEZONE=${DIY_TIMEZONE:='UTC'}
-	filter_keywords "set system.\@system\[-1\].timezone="
+	filter_keywords "set system.\@system\[-1].timezone="
 	sed -i "s*timezone='$OLD_KEYWORDS'*timezone='$DIY_TIMEZONE'*" ./package/base-files/files/bin/config_generate
 
 	#DIY_ZONENAME
-	if [ ! -n "$DIY_ZONENAME" ];then
-	sed -i '/ystem\[-1\].zonename=/d' ./package/base-files/files/bin/config_generate
-	sed -i "/set system.\@system\[-1\].hostname=/a\        set system.@system[-1].zonename='Asia/Shanghai'" ./package/base-files/files/bin/config_generate
+	if [ -n "$DIY_ZONENAME" ];then
+		sed -i '/@system\[-1].zonename=/d' ./package/base-files/files/bin/config_generate
+		sed -i "/set system.\@system\[-1].hostname=/a\                set system.\@system\[-1].zonename='Asia/Shanghai'" ./package/base-files/files/bin/config_generate
+		else 
+		sed -i '/@system\[-1].zonename=/d' ./package/base-files/files/bin/config_generate
 	fi
 
 	##DIY_USERNAME
@@ -322,6 +314,21 @@ function step_result(){
 		exit
 	fi
 }
+
+diy_config
+first_compile
+cd openwrt
+#make clean
+#git pull
+#./scripts/feeds update -a
+diy_config_run
+#./scripts/feeds install -a
+make_config
+#make -j$(($(nproc)+1)) download V=s
+make -j$(($(nproc)+1)) V=s || make -j1 V=s
+copy_firmware
+diy_config_recover
+step_result
 
 << EOF
 EOF

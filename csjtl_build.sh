@@ -133,7 +133,7 @@ function diy_config_run(){
 	echo "CONFIG_PACKAGE_luci-theme-$DIY_THEME=y" >> .config
 
 	#DIY_HOSTNAME
-	#grep 'set system.\@system\[-1\].hostname=' ./package/base-files/files/bin/config_generate > ../diy/tmp/tmp
+	#grep 'set system.\@system\[-1].hostname=' ./package/base-files/files/bin/config_generate > ../diy/tmp/tmp
 	#temp=$(cat ../diy/tmp/tmp)
 	#temp=$"${temp#*\'}"
 	#OLD_KEYWORDS=$"${temp%*\'}"
@@ -150,13 +150,15 @@ function diy_config_run(){
 
 	#DIY_TIMEZONE
 	DIY_TIMEZONE=${DIY_TIMEZONE:='UTC'}
-	filter_keywords "set system.\@system\[-1\].timezone="
+	filter_keywords "set system.\@system\[-1].timezone="
 	sed -i "s*timezone='$OLD_KEYWORDS'*timezone='$DIY_TIMEZONE'*" ./package/base-files/files/bin/config_generate
 
 	#DIY_ZONENAME
-	if [ ! -n "$DIY_ZONENAME" ];then
-	sed -i '/ystem\[-1\].zonename=/d' ./package/base-files/files/bin/config_generate
-	sed -i "/set system.\@system\[-1\].hostname=/a\        set system.@system[-1].zonename='Asia/Shanghai'" ./package/base-files/files/bin/config_generate
+	if [ -n "$DIY_ZONENAME" ];then
+		sed -i '/@system\[-1].zonename=/d' ./package/base-files/files/bin/config_generate
+		sed -i "/set system.\@system\[-1].hostname=/a\                set system.\@system\[-1].zonename='Asia/Shanghai'" ./package/base-files/files/bin/config_generate
+		else 
+		sed -i '/@system\[-1].zonename=/d' ./package/base-files/files/bin/config_generate
 	fi
 
 	##DIY_USERNAME
