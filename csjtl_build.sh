@@ -41,7 +41,7 @@ function diy_config(){
 	DIY_THEME='bootstrap'
 
 	#DIY_HOSTNAME DIY_TIMEZONE DIY_ZONENAME
-	DIY_HOSTNAME='CSJTL-OpenWRT'
+	DIY_HOSTNAME='OpenWrt-x86'
 	DIY_TIMEZONE='CST-8'
 	DIY_ZONENAME='Asia/Shanghai'
 
