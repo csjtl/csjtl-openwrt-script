@@ -53,7 +53,7 @@ function diy_config(){
 	DIY_HIDE='n'
 }
 
-function first_compile(){
+function start_compile(){
 		while :; do
 		echo "1.build; 2.rebuild"
 		read -p "选择: " CHOOSE
@@ -61,12 +61,13 @@ function first_compile(){
 			1)	rm -rf openwrt
 
 				if [ ! -d "openwrt" ]; then
-				#	ln -sf /mnt/mac/diy $PWD
-				#	ln -sf /mnt/mac/1046a_build.sh $PWD
-				#	ln -sf /mnt/mac/.config $PWD
-				#	ln -sf /mnt/mac/copy_image.sh $PWD
-				#	ln -sf /mnt/mac/IMAGE $PWD
-				#	ln -sf /mnt/mac/etc $PWD
+				#	ln -sf /mnt/win/GitHub/csjtl-openwrt-script/1046a/diy /home/csjtl/1046a
+				#	ln -sf /mnt/win/GitHub/csjtl-openwrt-script/1046a/1046a_build.sh /home/csjtl/1046a
+				#	ln -sf /mnt/win/GitHub/csjtl-openwrt-script/1046a/.config /home/csjtl/1046a/openwrt
+				
+				#	ln -sf /mnt/win/copy_image.sh /home/csjtl/1046a
+				#	ln -sf /mnt/win/IMAGE /home/csjtl/1046a
+				#	ln -sf /mnt/win/etc /home/csjtl/1046a
 				
 
 					git clone https://github.com/openwrt/openwrt.git
@@ -323,7 +324,7 @@ function step_result(){
 }
 
 diy_config
-first_compile
+start_compile
 cd openwrt
 #make clean
 #git pull

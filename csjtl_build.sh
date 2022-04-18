@@ -32,7 +32,7 @@ function diy_config(){
  -----------------------------------------------------'
 
 	#DIY_IP
-	DIY_IP=192.168.1.1
+	DIY_IP=192.168.2.1
 	#ttyd自定义登录
 	DIY_TTYD='y'
 	#nginx 80 端口
@@ -53,39 +53,54 @@ function diy_config(){
 	DIY_HIDE='n'
 }
 
-function first_compile(){
-	rm -rf openwrt
+function start_compile(){
+		while :; do
+		echo "1.build; 2.rebuild"
+		read -p "选择: " CHOOSE
+		case $CHOOSE in
+			1)	rm -rf openwrt
 
-	if [ ! -d "openwrt" ]; then
-	#	ln -sf /home/$USER/Documents/${USER}_openwrt/diy $PWD
-	#	ln -sf /home/$USER/Documents/${USER}_openwrt/${USER}_build.sh $PWD
+				if [ ! -d "openwrt" ]; then
+				#	ln -sf /mnt/win/GitHub/csjtl-openwrt-script/diy /home/csjtl/x86
+				#	ln -sf /mnt/win/GitHub/csjtl-openwrt-script/csjtl_build.sh /home/csjtl/x86
+				#	ln -sf /mnt/win/GitHub/csjtl-openwrt-script/.config /home/csjtl/x86/openwrt
 
-		git clone https://github.com/openwrt/openwrt.git
+					git clone https://github.com/openwrt/openwrt.git
 
-		#mkdir -p -m /home/$USER/openwrt_x86/dl /home/$USER/openwrt_x86/build_dir /home/$USER/openwrt_x86/staging_dir
-		ln -sf /home/$USER/openwrt_x86/build_dir $PWD/openwrt
-		ln -sf /home/$USER/openwrt_x86/dl $PWD/openwrt
-		ln -sf /home/$USER/openwrt_x86/staging_dir $PWD/openwrt
+					mkdir -p /home/csjtl/x86/openwrt-x86/dl /home/csjtl/x86/openwrt-x86/build_dir /home/csjtl/x86/openwrt-x86/staging_dir
+					ln -sf /home/csjtl/x86/openwrt-x86/build_dir /home/csjtl/x86/openwrt
+					ln -sf /home/csjtl/x86/openwrt-x86/dl /home/csjtl/x86/openwrt
+					ln -sf /home/csjtl/x86/openwrt-x86/staging_dir /home/csjtl/x86/openwrt
+					ln -sf /home/csjtl/x86/openwrt-x86/feeds /home/csjtl/x86/openwrt
 
-		diy_config
-		cd openwrt
-		./scripts/feeds update -a
-		diy_config_run
-		./scripts/feeds install -a
-		cp ../.config .
-		make_config
-		make -j$(($(nproc)+1)) download V=s
-		make -j1 V=s || make -j$(($(nproc)+1)) V=s
-		copy_firmware
-		diy_config_recover
-		exit
-	fi
+					diy_config
+					cd openwrt
+					./scripts/feeds update -a
+					diy_config_run
+					./scripts/feeds install -a
+					cp ../.config .
+					make_config
+					make -j$(($(nproc)+1)) download V=s
+					make -j1 V=s || make -j$(($(nproc)+1)) V=s
+					copy_firmware
+					diy_config_recover
+					exit
+				fi
+			break
+			;;
+			2)
+			break
+			;;
+		esac
+	done
+	
 }
 
 function make_config(){
 	every_step='编译'
 	while :; do
-		read -p "1.menuconfig; 2.defconfig \n 选择" CHOOSE
+		echo "1.menuconfig; 2.defconfig"
+		read -p "选择: " CHOOSE
 		case $CHOOSE in
 			1)	make menuconfig
 			break
@@ -138,6 +153,7 @@ function diy_config_run(){
 	#temp=$"${temp#*\'}"
 	#OLD_KEYWORDS=$"${temp%*\'}"
 	#sed -i "s/hostname='$OLD_KEYWORDS'/hostname='$DIY_HOSTNAME'/" ./package/base-files/files/bin/config_generate
+
 	DIY_HOSTNAME=${DIY_HOSTNAME:='OpenWrt'}
 	function filter_keywords(){
 		grep "$1" ./package/base-files/files/bin/config_generate > ../diy/tmp/tmp
@@ -229,6 +245,11 @@ function diy_config_run(){
 			sed -i "s/value=\"\"/value=\"<%=duser%>\"/" ./feeds/luci/modules/luci-base/luasrc/view/sysauth.htm
 			sed -i "s/type=\"text\"/type=\"text\"<%=attr(\"value\", duser)%>/" ./feeds/luci/themes/luci-theme-bootstrap/luasrc/view/themes/bootstrap/sysauth.htm
 	fi
+
+	#packages
+	if [ ! `grep -c csjtl ./feeds.conf.default` -ne '0' ];then
+    	echo "src-git-full csjtl https://github.com/csjtl/openwrt-packages-backup.git" >> ./feeds.conf.default
+	fi
 }
 
 function diy_config_recover(){
@@ -270,13 +291,15 @@ function diy_config_recover(){
 	#恢复DIY_HIDE
 	sed -i "s/value=\"\"/value=\"<%=duser%>\"/" ./feeds/luci/modules/luci-base/luasrc/view/sysauth.htm
 	sed -i "s/type=\"text\"/type=\"text\"<%=attr(\"value\", duser)%>/" ./feeds/luci/themes/luci-theme-bootstrap/luasrc/view/themes/bootstrap/sysauth.htm
+	#packages
+    sed -i '/csjtl/d' ./feeds.conf.default
 }
 
 function copy_firmware(){
 	every_step='固件拷贝'
-	rm -rf /home/$USER/openwrt_x86/bin/packages/x86/64/* /home/$USER/openwrt_x86/bin/firmware/x86/64/*
-	cp ./bin/packages/x86_64/*/*.ipk /home/$USER/openwrt_x86/bin/packages/x86/64/
-	cp ./bin/targets/x86/64/*.img.gz /home/$USER/openwrt_x86/bin/firmware/x86/64/
+	#rm -rf /home/$USER/openwrt_x86/bin/packages/x86/64/* /home/$USER/openwrt_x86/bin/firmware/x86/64/*
+	#cp ./bin/packages/x86_64/*/*.ipk /home/$USER/openwrt_x86/bin/packages/x86/64/
+	#cp ./bin/targets/x86/64/*.img.gz /home/$USER/openwrt_x86/bin/firmware/x86/64/
 	
 	#ln -sf /home/$USER/openwrt_x86/bin/packages /var/www/openwrt/www/bin
 	#ln -sf /home/$USER/openwrt_x86/bin/firmware /var/www/openwrt/www/bin
@@ -296,7 +319,7 @@ function step_result(){
 }
 
 diy_config
-#first_compile
+start_compile
 cd openwrt
 #make clean
 #git pull
@@ -304,12 +327,12 @@ cd openwrt
 diy_config_run
 #./scripts/feeds install -a
 make_config
-#make -j$(($(nproc)+1)) download V=s
+make -j$(($(nproc)+1)) download V=s
 make -j$(($(nproc)+1)) V=s || make -j1 V=s
 copy_firmware
-sleep 10
 diy_config_recover
 step_result
+
 << EOF
 EOF
 
