@@ -41,7 +41,7 @@ function diy_config(){
 	DIY_THEME='bootstrap'
 
 	#DIY_HOSTNAME DIY_TIMEZONE DIY_ZONENAME
-	DIY_HOSTNAME='OpenWrt-x86'
+	DIY_HOSTNAME='B-OpenWrt'
 	DIY_TIMEZONE='CST-8'
 	DIY_ZONENAME='Asia/Shanghai'
 
@@ -121,8 +121,8 @@ function diy_config_run(){
 	grep 'lan) ipad=${ipaddr' ./package/base-files/files/bin/config_generate > ../diy/tmp/tmp
 	old_ip=$(grep -oP '((\d)+.){3}\d+' ../diy/tmp/tmp)
 	sed -i "s/$old_ip/$DIY_IP/" ./package/base-files/files/bin/config_generate
-	sed -i "s/$old_ip/$DIY_IP/" ./package/base-files/files/etc/ethers
-	sed -i "s/$old_ip/$DIY_IP/" ./package/base-files/Makefile
+	#sed -i "s/$old_ip/$DIY_IP/" ./package/base-files/files/etc/ethers
+	#sed -i "s/$old_ip/$DIY_IP/" ./package/base-files/Makefile
 
 	#diy_ttyd
 	if [ "$DIY_TTYD" == 'y' ];then
