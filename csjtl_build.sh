@@ -47,7 +47,7 @@ function diy_config(){
 
 	#DIY_PASSWORD DIY_USERNAME
 	DIY_USERNAME='admin'
-	DIY_PASSWORD='admin'
+	DIY_PASSWORD=''
 
 	#DIY_HIDE
 	DIY_HIDE='n'
@@ -126,13 +126,14 @@ function diy_config_run(){
 
 	#diy_ttyd
 	if [ "$DIY_TTYD" == 'y' ];then
-	echo "config ttyd
-	    option interface '@lan'
-	    option debug '7'
-	    option command '/bin/login -f root'
-	    option ssl '1'
-	    option ssl_cert '/etc/nginx/conf.d/_lan.crt'
-	    option ssl_key '/etc/nginx/conf.d/_lan.key'" > ./feeds/packages/utils/ttyd/files/ttyd.config
+		echo "config ttyd
+		    option interface '@lan'
+		    option debug '7'
+		    option command '/bin/login -f root'
+		    option ssl '1'
+		    option ssl_cert '/etc/nginx/conf.d/_lan.crt'
+		    option ssl_key '/etc/nginx/conf.d/_lan.key'" > ./feeds/packages/utils/ttyd/files/ttyd.config
+		sed -i "s/login -f root/login -f "$DIY_USERNAME"/" ./feeds/packages/utils/ttyd/files/ttyd.config
 	fi
 
 	#diy_nginx
@@ -221,9 +222,20 @@ function diy_config_run(){
 	fi
 
 	#DIY_PASSWORD
-	passwd=$(openssl passwd -1 ${DIY_PASSWORD})
-	awk 'BEGIN {FS=":"; OFS=":";}  {if ($0 ~ /^'$DIY_USERNAME'/) {print $1,"'$passwd'",$3,$4,$5,$6,"::";} else {print $0;}}' < ./package/base-files/files/etc/shadow > ../diy/tmp/tmp
+	awk 'BEGIN {FS=":"; OFS=":";}  {if ($0 ~ /^root/) {print $1,"",$3,$4,$5,$6,"::";} else {print $0;}}' < ./package/base-files/files/etc/shadow > ../diy/tmp/tmp
 	mv ../diy/tmp/tmp ./package/base-files/files/etc/shadow
+	if [ -n "$DIY_PASSWORD" ];then
+			passwd=$(openssl passwd -1 ${DIY_PASSWORD})
+		if [ $DIY_USERNAME != root ];then
+			awk 'BEGIN {FS=":"; OFS=":";}  {if ($0 ~ /^'$DIY_USERNAME'/) {print $1,"'$passwd'",$3,$4,$5,$6,"::";} else {print $0;}}' < ./package/base-files/files/etc/shadow > ../diy/tmp/tmp
+			mv ../diy/tmp/tmp ./package/base-files/files/etc/shadow
+			awk 'BEGIN {FS=":"; OFS=":";}  {if ($0 ~ /^root/) {print $1,"'$passwd'",$3,$4,$5,$6,"::";} else {print $0;}}' < ./package/base-files/files/etc/shadow > ../diy/tmp/tmp
+			mv ../diy/tmp/tmp ./package/base-files/files/etc/shadow
+			else
+			awk 'BEGIN {FS=":"; OFS=":";}  {if ($0 ~ /^'$DIY_USERNAME'/) {print $1,"'$passwd'",$3,$4,$5,$6,"::";} else {print $0;}}' < ./package/base-files/files/etc/shadow > ../diy/tmp/tmp
+			mv ../diy/tmp/tmp ./package/base-files/files/etc/shadow
+		fi
+	fi
 
 	##openwrt/feeds/luci/modules/luci-mod-admin-mini/luasrc/controller/mini/index.lua
 	#sed -i "s/page.sysauth = \"$temp\"/page.sysauth = \"$DIY_USERNAME\"/" ./feeds/luci/modules/luci-mod-admin-mini/luasrc/controller/mini/index.lua
@@ -248,7 +260,7 @@ function diy_config_run(){
 
 	#packages
 	if [ ! `grep -c csjtl ./feeds.conf.default` -ne '0' ];then
-    	echo "src-git-full csjtl https://github.com/csjtl/openwrt-packages-backup.git" >> ./feeds.conf.default
+    	echo "src-git-full csjtl https://github.com/csjtl/openwrt-packages-backup.git:master" >> ./feeds.conf.default
 	fi
 }
 
@@ -274,7 +286,7 @@ function diy_config_recover(){
 	sed -i "s*timezone='$DIY_TIMEZONE'*timezone='UTC'*" ./package/base-files/files/bin/config_generate
 	#恢复DIY_ZONENAME
 	sed -i '/ystem\[-1\].zonename=/d' ./package/base-files/files/bin/config_generate
-	#恢复DIY_USERNAME
+	#恢复DIY_USERNAME DIY_PASSWORD
 	sed -i "s*option username '$DIY_USERNAME'*option username 'root'*" ./package/system/rpcd/files/rpcd.config
 	sed -i "s*option password '$DIY_USERNAME'*option password '\$p\$root'*" ./package/system/rpcd/files/rpcd.config
 	if [ "$DIY_USERNAME" != "root" ]; then
@@ -299,7 +311,8 @@ function copy_firmware(){
 	every_step='固件拷贝'
 	#rm -rf /home/$USER/openwrt_x86/bin/packages/x86/64/* /home/$USER/openwrt_x86/bin/firmware/x86/64/*
 	#cp ./bin/packages/x86_64/*/*.ipk /home/$USER/openwrt_x86/bin/packages/x86/64/
-	#cp ./bin/targets/x86/64/*.img.gz /home/$USER/openwrt_x86/bin/firmware/x86/64/
+	rm /mnt/win/*.img.gz
+	cp ./bin/targets/x86/64/*efi.img.gz /mnt/win/
 	
 	#ln -sf /home/$USER/openwrt_x86/bin/packages /var/www/openwrt/www/bin
 	#ln -sf /home/$USER/openwrt_x86/bin/firmware /var/www/openwrt/www/bin
