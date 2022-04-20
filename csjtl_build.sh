@@ -32,7 +32,7 @@ function diy_config(){
  -----------------------------------------------------'
 
 	#DIY_IP
-	DIY_IP=192.168.2.1
+	DIY_IP=10.0.0.1
 	#ttyd自定义登录
 	DIY_TTYD='y'
 	#nginx 80 端口
@@ -51,6 +51,11 @@ function diy_config(){
 
 	#DIY_HIDE
 	DIY_HIDE='n'
+
+	#packages
+	if [ ! `grep -c csjtl openwrt/feeds.conf.default` -ne '0' ];then
+    	echo "src-git-full csjtl https://github.com/csjtl/openwrt-packages-backup.git" >> openwrt/feeds.conf.default
+	fi
 }
 
 function start_compile(){
@@ -118,11 +123,17 @@ function diy_config_run(){
 
 	#DIY_IP
 	DIY_IP=${DIY_IP:=192.168.1.1}
+	ip_broadcast=`echo $DIY_IP | awk -F "." '{print $1"."$2"."$3"."255}'`
+	IP_LAN=`echo $DIY_IP | awk -F "." '{print $1"."$2".""$((addr_offset++))""."$4}'`
+
 	grep 'lan) ipad=${ipaddr' ./package/base-files/files/bin/config_generate > ../diy/tmp/tmp
 	old_ip=$(grep -oP '((\d)+.){3}\d+' ../diy/tmp/tmp)
 	sed -i "s/$old_ip/$DIY_IP/" ./package/base-files/files/bin/config_generate
 	#sed -i "s/$old_ip/$DIY_IP/" ./package/base-files/files/etc/ethers
 	#sed -i "s/$old_ip/$DIY_IP/" ./package/base-files/Makefile
+	grep '*) ipad=${ipaddr' ./package/base-files/files/bin/config_generate > ../diy/tmp/tmp
+	old_ip_lan=`awk -F "[\"\"]" '{print $2}' ../diy/tmp/tmp`
+	sed -i "s/$old_ip_lan/$IP_LAN/" ./package/base-files/files/bin/config_generate
 
 	#diy_ttyd
 	if [ "$DIY_TTYD" == 'y' ];then
@@ -257,11 +268,6 @@ function diy_config_run(){
 			sed -i "s/value=\"\"/value=\"<%=duser%>\"/" ./feeds/luci/modules/luci-base/luasrc/view/sysauth.htm
 			sed -i "s/type=\"text\"/type=\"text\"<%=attr(\"value\", duser)%>/" ./feeds/luci/themes/luci-theme-bootstrap/luasrc/view/themes/bootstrap/sysauth.htm
 	fi
-
-	#packages
-	if [ ! `grep -c csjtl ./feeds.conf.default` -ne '0' ];then
-    	echo "src-git-full csjtl https://github.com/csjtl/openwrt-packages-backup.git:master" >> ./feeds.conf.default
-	fi
 }
 
 function diy_config_recover(){
@@ -270,9 +276,10 @@ function diy_config_recover(){
 	#恢复banner
 	echo -e "  _______                     ________        __\n |       |.-----.-----.-----.|  |  |  |.----.|  |_\n |   -   ||  _  |  -__|     ||  |  |  ||   _||   _|\n |_______||   __|_____|__|__||________||__|  |____|\n          |__| W I R E L E S S   F R E E D O M\n -----------------------------------------------------\n %D %V, %C\n -----------------------------------------------------" > ./package/base-files/files/etc/banner
 	#恢复ip
+	#sed -i "s/$DIY_IP/192.168.1.1/" ./package/base-files/files/etc/ethers
+	#sed -i "s/$DIY_IP/192.168.1.1/" ./package/base-files/Makefile
 	sed -i "s/$DIY_IP/192.168.1.1/" ./package/base-files/files/bin/config_generate
-	sed -i "s/$DIY_IP/192.168.1.1/" ./package/base-files/files/etc/ethers
-	sed -i "s/$DIY_IP/192.168.1.1/" ./package/base-files/Makefile
+	sed -i "s/$IP_LAN/192.168.\$((addr_offset++)).1/" ./package/base-files/files/bin/config_generate
 	#恢复ttyd
 	echo -e "config ttyd\n	option interface '@lan'\n	option command '/bin/login'" > ./feeds/packages/utils/ttyd/files/ttyd.config
 	#恢复nginx
@@ -331,16 +338,26 @@ function step_result(){
 	fi
 }
 
+function feeds_update(){
+	./scripts/feeds update -a
+}
+
+function feeds_install(){
+	cd feeds/csjtl && git pull
+	cd -
+	./scripts/feeds install -a
+}
+
 diy_config
 start_compile
 cd openwrt
 #make clean
 #git pull
-#./scripts/feeds update -a
+#feeds_update
 diy_config_run
-#./scripts/feeds install -a
+#feeds_install
 make_config
-make -j$(($(nproc)+1)) download V=s
+#make -j$(($(nproc)+1)) download V=s
 make -j$(($(nproc)+1)) V=s || make -j1 V=s
 copy_firmware
 diy_config_recover
