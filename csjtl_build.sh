@@ -66,17 +66,17 @@ function start_compile(){
 			1)	rm -rf openwrt
 
 				if [ ! -d "openwrt" ]; then
-				#	ln -sf /mnt/win/GitHub/csjtl-openwrt-script/diy /home/csjtl/x86
-				#	ln -sf /mnt/win/GitHub/csjtl-openwrt-script/csjtl_build.sh /home/csjtl/x86
-				#	ln -sf /mnt/win/GitHub/csjtl-openwrt-script/.config /home/csjtl/x86/openwrt
+				#	ln -sf /mnt/win/GitHub/csjtl-openwrt-script/diy /home/csjtl/project/x86
+				#	ln -sf /mnt/win/GitHub/csjtl-openwrt-script/csjtl_build.sh /home/csjtl/project/x86
+				#	ln -sf /mnt/win/GitHub/csjtl-openwrt-script/.config /home/csjtl/project/x86/openwrt
 
 					git clone https://github.com/openwrt/openwrt.git
 
-					mkdir -p /home/csjtl/x86/openwrt-x86/dl /home/csjtl/x86/openwrt-x86/build_dir /home/csjtl/x86/openwrt-x86/staging_dir
-					ln -sf /home/csjtl/x86/openwrt-x86/build_dir /home/csjtl/x86/openwrt
-					ln -sf /home/csjtl/x86/openwrt-x86/dl /home/csjtl/x86/openwrt
-					ln -sf /home/csjtl/x86/openwrt-x86/staging_dir /home/csjtl/x86/openwrt
-					ln -sf /home/csjtl/x86/openwrt-x86/feeds /home/csjtl/x86/openwrt
+					mkdir -p /home/csjtl/project/x86/openwrt-x86/dl /home/csjtl/project/x86/openwrt-x86/build_dir /home/csjtl/project/x86/openwrt-x86/staging_dir
+					ln -sf /home/csjtl/project/x86/openwrt-x86/build_dir /home/csjtl/project/x86/openwrt
+					ln -sf /home/csjtl/project/x86/openwrt-x86/dl /home/csjtl/project/x86/openwrt
+					ln -sf /home/csjtl/project/x86/openwrt-x86/staging_dir /home/csjtl/project/x86/openwrt
+					ln -sf /home/csjtl/project/x86/openwrt-x86/feeds /home/csjtl/project/x86/openwrt
 
 					diy_config
 					cd openwrt
@@ -318,7 +318,7 @@ function copy_firmware(){
 	every_step='固件拷贝'
 	#rm -rf /home/$USER/openwrt_x86/bin/packages/x86/64/* /home/$USER/openwrt_x86/bin/firmware/x86/64/*
 	#cp ./bin/packages/x86_64/*/*.ipk /home/$USER/openwrt_x86/bin/packages/x86/64/
-	rm /mnt/win/*.img.gz
+	rm -rf /mnt/win/*.img.gz
 	cp ./bin/targets/x86/64/*efi.img.gz /mnt/win/
 	
 	#ln -sf /home/$USER/openwrt_x86/bin/packages /var/www/openwrt/www/bin
