@@ -53,9 +53,14 @@ function diy_config(){
 	DIY_HIDE='n'
 
 	#packages
-	if [ ! `grep -c csjtl openwrt/feeds.conf.default` -ne '0' ];then
-    	echo "src-git-full csjtl https://github.com/csjtl/openwrt-packages-backup.git" >> openwrt/feeds.conf.default
-	fi
+	#if [ ! `grep -c csjtl openwrt/feeds.conf.default` -ne '0' ];then
+    #	echo "src-git-full csjtl https://github.com/csjtl/openwrt-packages-backup.git" >> openwrt/feeds.conf.default
+	#fi
+	#rm -rf ./feeds/csjtl*
+	url=('https://github.com/csjtl/openwrt-packages-backup/trunk/autocore'
+        'https://github.com/csjtl/openwrt-packages-backup/trunk/luci-app-filetransfer'
+        'https://github.com/csjtl/openwrt-packages-backup/trunk/luci-app-openclash'
+		'https://github.com/csjtl/openwrt-packages-backup/trunk/luci-lib-fs')
 }
 
 function start_compile(){
@@ -268,6 +273,15 @@ function diy_config_run(){
 			sed -i "s/value=\"\"/value=\"<%=duser%>\"/" ./feeds/luci/modules/luci-base/luasrc/view/sysauth.htm
 			sed -i "s/type=\"text\"/type=\"text\"<%=attr(\"value\", duser)%>/" ./feeds/luci/themes/luci-theme-bootstrap/luasrc/view/themes/bootstrap/sysauth.htm
 	fi
+
+	#packages
+	mkdir -p ./feeds/csjtl
+	cd ./feeds/csjtl/
+	for packages_link in ${url[@]}
+    do
+        svn export $packages_link
+    done
+	cd -
 }
 
 function diy_config_recover(){
@@ -343,8 +357,6 @@ function feeds_update(){
 }
 
 function feeds_install(){
-	cd feeds/csjtl && git pull
-	cd -
 	./scripts/feeds install -a
 }
 
