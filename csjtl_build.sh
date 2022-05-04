@@ -56,7 +56,6 @@ function diy_config(){
 	#if [ ! `grep -c csjtl openwrt/feeds.conf.default` -ne '0' ];then
     #	echo "src-git-full csjtl https://github.com/csjtl/openwrt-packages-backup.git" >> openwrt/feeds.conf.default
 	#fi
-	#rm -rf ./feeds/csjtl*
 	url=('https://github.com/csjtl/openwrt-packages-backup/trunk/autocore'
         'https://github.com/csjtl/openwrt-packages-backup/trunk/luci-app-filetransfer'
         'https://github.com/csjtl/openwrt-packages-backup/trunk/luci-app-openclash'
@@ -88,7 +87,7 @@ function start_compile(){
 					./scripts/feeds update -a
 					diy_config_run
 					./scripts/feeds install -a
-					cp ../.config .
+					cp /mnt/win/GitHub/csjtl-openwrt-script/.config .
 					make_config
 					make -j$(($(nproc)+1)) download V=s
 					make -j1 V=s || make -j$(($(nproc)+1)) V=s
@@ -108,6 +107,7 @@ function start_compile(){
 
 function make_config(){
 	every_step='编译'
+	cp /mnt/win/GitHub/csjtl-openwrt-script/.config .
 	while :; do
 		echo "1.menuconfig; 2.defconfig"
 		read -p "选择: " CHOOSE
@@ -275,13 +275,21 @@ function diy_config_run(){
 	fi
 
 	#packages
-	mkdir -p ./feeds/csjtl
-	cd ./feeds/csjtl/
-	for packages_link in ${url[@]}
-    do
-        svn export $packages_link
-    done
-	cd -
+
+	echo "1.update custom packages; 2.no update"
+	read -p "选择: " CHOOSE
+	if [ "$CHOOSE" == 1 ]; then
+		rm -rf ./feeds/csjtl*
+		mkdir -p ./feeds/csjtl
+		cd ./feeds/csjtl/
+		for packages_link in ${url[@]}
+    	do
+        	svn export $packages_link
+    	done
+		cd -
+	fi
+
+
 }
 
 function diy_config_recover(){
@@ -332,6 +340,7 @@ function copy_firmware(){
 	every_step='固件拷贝'
 	#rm -rf /home/$USER/openwrt_x86/bin/packages/x86/64/* /home/$USER/openwrt_x86/bin/firmware/x86/64/*
 	#cp ./bin/packages/x86_64/*/*.ipk /home/$USER/openwrt_x86/bin/packages/x86/64/
+	cp .config /mnt/win/GitHub/csjtl-openwrt-script/
 	rm -rf /mnt/win/*.img.gz
 	cp ./bin/targets/x86/64/*efi.img.gz /mnt/win/
 	
