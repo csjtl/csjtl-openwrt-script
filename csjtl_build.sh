@@ -53,13 +53,12 @@ function diy_config(){
 	DIY_HIDE='n'
 
 	#packages
-	#if [ ! `grep -c csjtl openwrt/feeds.conf.default` -ne '0' ];then
-    #	echo "src-git-full csjtl https://github.com/csjtl/openwrt-packages-backup.git" >> openwrt/feeds.conf.default
-	#fi
-	url=('https://github.com/csjtl/openwrt-packages-backup/trunk/autocore'
-        'https://github.com/csjtl/openwrt-packages-backup/trunk/luci-app-filetransfer'
-        'https://github.com/csjtl/openwrt-packages-backup/trunk/luci-app-openclash'
-		'https://github.com/csjtl/openwrt-packages-backup/trunk/luci-lib-fs')
+	if [ ! `grep -c csjtl openwrt/feeds.conf.default` -ne '0' ];then
+    	echo "src-git-full csjtl https://github.com/csjtl/openwrt-packages-backup.git" >> openwrt/feeds.conf.default
+	fi
+	#url=('https://github.com/csjtl/openwrt-packages-backup/trunk/autocore'
+    #    'https://github.com/csjtl/openwrt-packages-backup/trunk/luci-app-fileassistant'
+    #    'https://github.com/csjtl/openwrt-packages-backup/trunk/luci-app-openclash')
 }
 
 function start_compile(){
@@ -145,10 +144,7 @@ function diy_config_run(){
 		echo "config ttyd
 		    option interface '@lan'
 		    option debug '7'
-		    option command '/bin/login -f root'
-		    option ssl '1'
-		    option ssl_cert '/etc/nginx/conf.d/_lan.crt'
-		    option ssl_key '/etc/nginx/conf.d/_lan.key'" > ./feeds/packages/utils/ttyd/files/ttyd.config
+		    option command '/bin/login -f root'" > ./feeds/packages/utils/ttyd/files/ttyd.config
 		sed -i "s/login -f root/login -f "$DIY_USERNAME"/" ./feeds/packages/utils/ttyd/files/ttyd.config
 	fi
 
@@ -276,18 +272,18 @@ function diy_config_run(){
 
 	#packages
 
-	echo "1.update custom packages; 2.no update"
-	read -p "选择: " CHOOSE
-	if [ "$CHOOSE" == 1 ]; then
-		rm -rf ./feeds/csjtl*
-		mkdir -p ./feeds/csjtl
-		cd ./feeds/csjtl/
-		for packages_link in ${url[@]}
-    	do
-        	svn export $packages_link
-    	done
-		cd -
-	fi
+	#echo "1.update custom packages; 2.no update"
+	#read -p "选择: " CHOOSE
+	#if [ "$CHOOSE" == 1 ]; then
+	#	rm -rf ./package/feeds/csjtl*
+	#	mkdir -p ./package/feeds/csjtl
+	#	cd ./package/feeds/csjtl
+	#	for packages_link in ${url[@]}
+    #	do
+    #    	svn export $packages_link
+    #	done
+	#	cd -
+	#fi
 
 
 }
@@ -369,16 +365,17 @@ function feeds_install(){
 	./scripts/feeds install -a
 }
 
+#set -x on
 diy_config
 start_compile
 cd openwrt
-#make clean
-#git pull
-#feeds_update
+make dirclean
+git pull
+feeds_update
 diy_config_run
-#feeds_install
+feeds_install
 make_config
-#make -j$(($(nproc)+1)) download V=s
+make -j$(($(nproc)+1)) download V=s
 make -j$(($(nproc)+1)) V=s || make -j1 V=s
 copy_firmware
 diy_config_recover
