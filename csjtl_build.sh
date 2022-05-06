@@ -369,13 +369,13 @@ function feeds_install(){
 diy_config
 start_compile
 cd openwrt
-make dirclean
-git pull
-feeds_update
+#make dirclean
+#git pull
+#feeds_update
 diy_config_run
-feeds_install
+#feeds_install
 make_config
-make -j$(($(nproc)+1)) download V=s
+#make -j$(($(nproc)+1)) download V=s
 make -j$(($(nproc)+1)) V=s || make -j1 V=s
 copy_firmware
 diy_config_recover
