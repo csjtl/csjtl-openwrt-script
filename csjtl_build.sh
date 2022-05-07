@@ -41,7 +41,7 @@ function diy_config(){
 	DIY_THEME='bootstrap'
 
 	#DIY_HOSTNAME DIY_TIMEZONE DIY_ZONENAME
-	DIY_HOSTNAME='B-OpenWrt'
+	DIY_HOSTNAME='A-OpenWrt'
 	DIY_TIMEZONE='CST-8'
 	DIY_ZONENAME='Asia/Shanghai'
 
@@ -202,7 +202,7 @@ function diy_config_run(){
 	filter_keywords "option username "
 	sed -i "s*option username '$OLD_KEYWORDS'*option username '$DIY_USERNAME'*" ./package/system/rpcd/files/rpcd.config
 	filter_keywords "option password "
-	sed -i "s*option password '$OLD_KEYWORDS'*option password '\$p\$$DIY_USERNAME'*" ./package/system/rpcd/files/rpcd.config
+	sed -i "s*option password '\$p\$$OLD_KEYWORDS'*option password '\$p\$$DIY_USERNAME'*" ./package/system/rpcd/files/rpcd.config
 
 	##openwrt/package/base-files/files/etc/passwd
 	temp=`head -1 ./package/base-files/files/etc/passwd`
@@ -313,7 +313,7 @@ function diy_config_recover(){
 	sed -i '/ystem\[-1\].zonename=/d' ./package/base-files/files/bin/config_generate
 	#恢复DIY_USERNAME DIY_PASSWORD
 	sed -i "s*option username '$DIY_USERNAME'*option username 'root'*" ./package/system/rpcd/files/rpcd.config
-	sed -i "s*option password '$DIY_USERNAME'*option password '\$p\$root'*" ./package/system/rpcd/files/rpcd.config
+	sed -i "s*option password '\$p\$$DIY_USERNAME'*option password '\$p\$root'*" ./package/system/rpcd/files/rpcd.config
 	if [ "$DIY_USERNAME" != "root" ]; then
 		sed -i '1d' ./package/base-files/files/etc/passwd
 		sed -i '1d' ./package/base-files/files/etc/shadow
@@ -369,10 +369,10 @@ function feeds_install(){
 diy_config
 start_compile
 cd openwrt
-#make dirclean
+#make clean
 #git pull
 #feeds_update
-diy_config_run
+#diy_config_run
 #feeds_install
 make_config
 #make -j$(($(nproc)+1)) download V=s
